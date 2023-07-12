@@ -55,7 +55,7 @@ contract("Test Game contract - placement afk", (accounts) => {
 
     // Player two agrees on the bet
     it("Other player agrees to the bet", async () => {
-      const tx = await game.acceptBet(amount, { from: playerTwo });
+      const tx = await game.acceptBet({ from: playerTwo });
       truffleAssert.eventEmitted(tx, "BetAgreed", (ev) => {
         return ev.amount == amount;
       });

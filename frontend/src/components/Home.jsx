@@ -114,14 +114,14 @@ export const Home = () => {
           <Form method="post">
             <input type="hidden" name="address" value={contract._address} />
             <input type="hidden" name="intent" value="createStandardGame" />
-            <CustomButton variant="contained" color="primary">
+            <CustomButton variant="contained" color="primary" width="100px">
               Standard
             </CustomButton>
           </Form>
           <Form method="post">
             <input type="hidden" name="address" value={contract._address} />
             <input type="hidden" name="intent" value="createSmallGame" />
-            <CustomButton variant="contained" color="primary">
+            <CustomButton variant="contained" color="primary" width="100px">
               Small
             </CustomButton>
           </Form>
@@ -143,7 +143,7 @@ export const Home = () => {
           <Form method="post">
             <input type="hidden" name="address" value={contract._address} />
             <input type="hidden" name="intent" value="joinRandomGame" />
-            <CustomButton variant="contained" color="primary">
+            <CustomButton variant="contained" color="primary" width="100px">
               Random
             </CustomButton>
           </Form>

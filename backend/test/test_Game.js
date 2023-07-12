@@ -53,7 +53,7 @@ contract("Test Game contract", (accounts) => {
     // Player one tries to agree to his own bet proposal
     it("Same player cannot also agree to it itself", async () => {
       try {
-        await game.acceptBet(amount, { from: playerOne });
+        await game.acceptBet({ from: playerOne });
         assert.fail("The transaction should have thrown an error");
       } catch (err) {
         assert.include(
@@ -66,7 +66,7 @@ contract("Test Game contract", (accounts) => {
 
     // Player two agrees on the bet
     it("Other player agrees to the bet", async () => {
-      const tx = await game.acceptBet(amount, { from: playerTwo });
+      const tx = await game.acceptBet({ from: playerTwo });
       truffleAssert.eventEmitted(tx, "BetAgreed", (ev) => {
         return ev.amount == amount;
       });
@@ -75,7 +75,7 @@ contract("Test Game contract", (accounts) => {
     });
 
     // Player one tries to fund a invalid amount
-    it("Player cannot bet an amount different from the agreed one", async () => {
+    it("Player cannot fund an amount different from the agreed one", async () => {
       try {
         await game.betFunds({ from: playerOne, value: amount - 1 });
         assert.fail("The transaction should have thrown an error");

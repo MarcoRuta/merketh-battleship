@@ -20,3 +20,46 @@ export const gamesManagerContractFromAddress = (address) => {
   return contract;
 };
 
+export const Phase = {
+  Waiting: "0",
+  Betting: "1",
+  Funding: "2",
+  Placement: "3",
+  Attack: "4",
+  Winner: "5",
+  End: "6",
+};
+
+export const phaseToString = (phase) => {
+  switch (phase) {
+    case Phase.Waiting:
+      return "Waiting for an opponent...";
+    case Phase.Betting:
+      return "Is time to bet!";
+    case Phase.Funding:
+      return "Is time to fund!";
+    case Phase.Placement:
+      return "Place your fleet!";
+    case Phase.Attack:
+      return "Is time to attack!";
+    case Phase.Winner:
+      return "We have a winner!";
+    case Phase.End:
+      return "End of the game.";
+    default:
+      throw new Error("Invalid phase");
+  }
+};
+
+export const isGameStarted = (phase) => {
+  return (
+    phase === Phase.Placement ||
+    phase === Phase.Attack 
+  );
+};
+
+export const ShotType = {
+  Taken: "0",
+  Hit: "1",
+  Miss: "2",
+};

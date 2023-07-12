@@ -2,11 +2,10 @@
 pragma solidity >=0.4.22 <0.9.0;
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract Game{
-
-    // Field size, the game owner can choose to generate a normal or small (faster) match. 
-    uint8 public constant BOARD_Small = 4*4;
-    uint8 public constant BOARD_Normal = 8*8;
+contract Game {
+    // Field size, the game owner can choose to generate a normal or small (faster) match.
+    uint8 public constant BOARD_Small = 4 * 4;
+    uint8 public constant BOARD_Normal = 8 * 8;
 
     // Fleet size, it is proportional to the game size.
     uint8 public constant FLEET_Small = 5;
@@ -19,37 +18,37 @@ contract Game{
     uint8 public boardSize;
     uint8 public fleetSize;
 
-    /* 
-    * Different shot state:
-    * Taken represent a shot which result is still not checked.
-    * Hit represent a shot that has hit a ship.
-    * Miss represent a shot that missed.
-    */
-    enum ShotState{
+    /*
+     * Different shot state:
+     * Taken represent a shot which result is still not checked.
+     * Hit represent a shot that has hit a ship.
+     * Miss represent a shot that missed.
+     */
+    enum ShotState {
         Taken,
         Hit,
         Miss
     }
 
-    /* 
-    * Shot structure:
-    * index represent the position on the board.
-    * state is the ShotState.
-    */
-    struct Shot{
+    /*
+     * Shot structure:
+     * index represent the position on the board.
+     * state is the ShotState.
+     */
+    struct Shot {
         uint8 index;
         ShotState state;
     }
 
-    /* 
-    * afk is a boolean value that represent if the player is reported as afk.
-    * Player structure:
-    * hasPaid represent if the player has funded.
-    * board is the merkle tree root of the merkle tree representing the board.
-    * hits is the number of ship the player has hit.
-    * shotsTaken and shotsTakenMap maps the shots taken so far by the player.
-    */
-    struct Player{
+    /*
+     * afk is a boolean value that represent if the player is reported as afk.
+     * Player structure:
+     * hasPaid represent if the player has funded.
+     * board is the merkle tree root of the merkle tree representing the board.
+     * hits is the number of ship the player has hit.
+     * shotsTaken and shotsTakenMap maps the shots taken so far by the player.
+     */
+    struct Player {
         bool afk;
         bool hasPaid;
         bytes32 board;
@@ -63,7 +62,7 @@ contract Game{
     address public adversary;
 
     // Mapping used to store all the information about the Players.
-    mapping(address => Player) players;
+    mapping(address => Player) public players;
 
     // Queue of all the proposed bets.
     mapping(address => uint256) public betsQueue;
@@ -78,15 +77,15 @@ contract Game{
     address public winner;
 
     /*Different phases of the game
-    * Waiting: game  successfully created and waiting for a second player to join.
-    * Betting: waiting for the two players to reach an agreement on the bet.
-    * Funding: waiting for the two player to deposit the bet amount.
-    * Placement: waiting for the two players to commit their board.
-    * Attack: the players shot a torpedo per turn .
-    * Winner: one of the player has hit all the opponent ships and is declared as winner.
-    * End: the game is terminated and the winner can withdraw the amount he has won.
-    */
-    enum Phase{
+     * Waiting: game  successfully created and waiting for a second player to join.
+     * Betting: waiting for the two players to reach an agreement on the bet.
+     * Funding: waiting for the two player to deposit the bet amount.
+     * Placement: waiting for the two players to commit their board.
+     * Attack: the players shot a torpedo per turn .
+     * Winner: one of the player has hit all the opponent ships and is declared as winner.
+     * End: the game is terminated and the winner can withdraw the amount he has won.
+     */
+    enum Phase {
         Waiting,
         Betting,
         Funding,
@@ -161,30 +160,30 @@ contract Game{
         _;
     }
 
-    modifier noFund(){
+    modifier noFund() {
         require(players[msg.sender].hasPaid != true);
         _;
     }
 
-    modifier Fund(){
+    modifier Fund() {
         require(players[msg.sender].hasPaid == true);
         _;
     }
 
-    modifier checkAFK(){
-    address opponent = msg.sender == owner ? adversary : owner;
-    // Check if the player is reported as AFK
-    if (players[msg.sender].afk) {
-    // Check if the player has done an action before the timeout
-    if (block.number < afk_timeout && players[msg.sender].afk) {
-        players[msg.sender].afk = false;
-    } else if (block.number >= afk_timeout) {
-        // The player is verified as afk and the opponent wins
-        _declareWinner(opponent);
-        return;
-    }
-}
-_;
+    modifier checkAFK() {
+        address opponent = msg.sender == owner ? adversary : owner;
+        // Check if the player is reported as AFK
+        if (players[msg.sender].afk) {
+            // Check if the player has done an action before the timeout
+            if (block.number < afk_timeout && players[msg.sender].afk) {
+                players[msg.sender].afk = false;
+            } else if (block.number >= afk_timeout) {
+                // The player is verified as afk and the opponent wins
+                _declareWinner(opponent);
+                return;
+            }
+        }
+        _;
     }
 
     // Modifiers used to check if a function is called in a legit game phase.
@@ -224,7 +223,7 @@ _;
     }
 
     // A player can be reported as AFK only during Placement and Attack phases.
-    modifier afkAllowed(){
+    modifier afkAllowed() {
         require(gamePhase == Phase.Placement || gamePhase == Phase.Attack);
         _;
     }
@@ -244,10 +243,9 @@ _;
         emit DimensionSelected(_small);
     }
 
-
     /*Function used to match a join as second player.*/
-    function matchJoin(address _adversary) external phaseWaiting{
-        require(adversary == address(0),"This game is not available!");
+    function matchJoin(address _adversary) external phaseWaiting {
+        require(adversary == address(0), "This game is not available!");
         adversary = _adversary;
         gamePhase = Phase.Betting;
     }
@@ -259,18 +257,19 @@ _;
     }
 
     /*Function callable in betting phase by a player to accept the last proposed bet amount.*/
-    function acceptBet(uint256 _amount) external onlyPlayer phaseBetting {
+    function acceptBet() external onlyPlayer phaseBetting {
         require(
-            _amount != 0 &&
-                ((msg.sender == owner && betsQueue[adversary] == _amount) ||
-                    (msg.sender == adversary && betsQueue[owner] == _amount)),
+            ((msg.sender == owner && betsQueue[adversary] != 0) ||
+                (msg.sender == adversary && betsQueue[owner] != 0)),
             "The amount proposed is not valid!"
         );
 
+        address opponent = msg.sender == owner ? adversary : owner;
+
         // Change game phase and emit BetAgreed event.
-        bet = _amount;
+        bet = betsQueue[opponent];
         gamePhase = Phase.Funding;
-        emit BetAgreed(_amount);
+        emit BetAgreed(bet);
     }
 
     /*Function callable in Funding phase by a player that has not fund yet
@@ -279,15 +278,15 @@ _;
         require(msg.value == bet);
         players[msg.sender].hasPaid = true;
 
-            // If both have paid, move on to the next phase and emit FundDeposited event.
-            if (players[owner].hasPaid && players[adversary].hasPaid) {
-                emit FundsDeposited();
-                gamePhase = Phase.Placement;
-            }
+        // If both have paid, move on to the next phase and emit FundDeposited event.
+        if (players[owner].hasPaid && players[adversary].hasPaid) {
+            emit FundsDeposited();
+            gamePhase = Phase.Placement;
         }
+    }
 
-    /*Function that can be used to forfait, the adversary automatically wins. 
-    * Can be called only if the player has fund his bet (after Funding phase)*/
+    /*Function that can be used to forfait, the adversary automatically wins.
+     * Can be called only if the player has fund his bet (after Funding phase)*/
     function forfait() external onlyPlayer Fund {
         address opponent = msg.sender == owner ? adversary : owner;
         emit Forfait();
@@ -295,13 +294,14 @@ _;
     }
 
     /*Function callable in Placement phase by a player to commit his board.*/
-    function commitBoard(bytes32 _board) external onlyPlayer checkAFK phasePlacement {
+    function commitBoard(
+        bytes32 _board
+    ) external onlyPlayer checkAFK phasePlacement {
         require(players[msg.sender].board == 0);
         players[msg.sender].board = _board;
 
         // If both have committed their board move on and emit BoardsCommitted event.
-        if (players[owner].board != 0 && players[adversary].board  != 0) {
-
+        if (players[owner].board != 0 && players[adversary].board != 0) {
             emit BoardsCommitted();
             players[owner].hits = 0;
             gamePhase = Phase.Attack;
@@ -312,7 +312,9 @@ _;
     }
 
     /*Function callable by a player to retrieve the shots taken so far.*/
-    function getShotsTaken(address _player) external view returns (Shot[] memory) {
+    function getShotsTaken(
+        address _player
+    ) external view returns (Shot[] memory) {
         return players[_player].shotsTaken;
     }
 
@@ -352,7 +354,7 @@ _;
         }
 
         if (_isShip) {
-            //Update the shot state and the opponent hits.  
+            //Update the shot state and the opponent hits.
             players[opponent].shotsTaken[last].state = ShotState.Hit;
             players[msg.sender].hits++;
 
@@ -384,7 +386,6 @@ _;
         require(_cells.length == _indexes.length);
         address opponent = msg.sender == owner ? adversary : owner;
         uint8 ships = 0;
-
 
         // As first we verify the multiproof of all the leaves of the board.
         if (
@@ -421,30 +422,30 @@ _;
         // Verify that the opponent has not been reported before.
         require(!players[opponent].afk);
 
-        if(gamePhase == Phase.Placement){
+        if (gamePhase == Phase.Placement) {
             // Check that the opponent has not committed the board yet.
-            require(players[opponent].board == 0,"The game is waiting for your board! You can't report now.");
+            require(
+                players[opponent].board == 0,
+                "The game is waiting for your board! You can't report now."
+            );
         }
 
-        if(gamePhase == Phase.Attack){
+        if (gamePhase == Phase.Attack) {
             // Check that is the opponent turn.
-            require(turn == opponent,"It is your turn! You can't report now.");
-
+            require(turn == opponent, "It is your turn! You can't report now.");
         }
 
         emit PlayerAFK(opponent);
         players[opponent].afk = true;
-        afk_timeout  = block.number + 5;
+        afk_timeout = block.number + 5;
     }
 
-
-    function verifyAFK() external onlyPlayer afkAllowed{
+    function verifyAFK() external onlyPlayer afkAllowed {
         address opponent = msg.sender == owner ? adversary : owner;
         require(players[opponent].afk && block.number >= afk_timeout);
         // No actions are taken before the timeout, the opponent wins by default
         _declareWinner(msg.sender);
     }
-
 
     ///////////////
     ////HELPERS////
@@ -452,12 +453,18 @@ _;
 
     function _attack(uint8 _index) internal {
         // Check if the cell is in range and was not shot before.
-        require(players[msg.sender].shotsTakenMap[_index] == false,"You have already shot that cell");
-        require(_index < boardSize, "The shot is invalid for the current map size!");
+        require(
+            players[msg.sender].shotsTakenMap[_index] == false,
+            "You have already shot that cell"
+        );
+        require(
+            _index < boardSize,
+            "The shot is invalid for the current map size!"
+        );
 
         // Set the shot as taken.
         players[msg.sender].shotsTakenMap[_index] = true;
-        players[msg.sender].shotsTaken.push(Shot(_index,ShotState.Taken));
+        players[msg.sender].shotsTaken.push(Shot(_index, ShotState.Taken));
 
         // Emit a ShotTaken event.
         emit ShotTaken(msg.sender, _index);
@@ -467,10 +474,10 @@ _;
     }
 
     /*
-    * Returns a boolean that is true when the proof verifies
-    * that the value of a leaf is contained in the tree given only
-    * the proof, the merkle root and the encoding of the leaf.
-    */
+     * Returns a boolean that is true when the proof verifies
+     * that the value of a leaf is contained in the tree given only
+     * the proof, the merkle root and the encoding of the leaf.
+     */
     function _checkProof(
         bool _isShip,
         uint256 _salt,
@@ -485,10 +492,10 @@ _;
     }
 
     /*
-    * Returns a boolean that is true when the multiproof verifies
-    * that all the leaves are contained in the tree given only
-    * the multiproof, the merkle root and the encoding of the leaf.
-    */
+     * Returns a boolean that is true when the multiproof verifies
+     * that all the leaves are contained in the tree given only
+     * the multiproof, the merkle root and the encoding of the leaf.
+     */
     function _checkMultiProof(
         bytes32[] memory _proof,
         bool[] memory _proofFlags,
@@ -505,7 +512,6 @@ _;
         // Verify the multiProof on all the leaves.
         return MerkleProof.multiProofVerify(_proof, _proofFlags, _root, leaves);
     }
-
 
     /*Hashes and encodes the leaf parameters into a 32-byte value.*/
     function _encodeLeaf(
@@ -525,6 +531,4 @@ _;
         winner = player;
         gamePhase = Phase.End;
     }
-
 }
-

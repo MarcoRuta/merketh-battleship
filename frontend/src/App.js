@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { customTheme } from "./utils/CustomTheme.jsx";
 import Navbar from "./components/Navbar";
@@ -11,12 +11,17 @@ import {
   action as gameAction,
   loader as gameLoader,
 } from "./components/game/Game";
+import {
+  Funding,
+  action as fundingAction
+} from "./components/game/Funding";
 import { Betting, action as bettingAction } from "./components/game/Betting";
 import { Waiting, loader as waitingLoader } from "./components/game/Waiting";
+import { Placing } from "./components/game/Placing";
 import { useEth } from "./contexts/EthContext";
 import { CssBaseline, Box } from "@mui/material";
 import { AlertProvider } from "./contexts/AlertContext";
-import  AlertPopup  from "./components/utility/AlertPopup";
+import AlertPopup from "./components/utility/AlertPopup";
 
 const myRouter = createBrowserRouter([
   {
@@ -36,9 +41,18 @@ const myRouter = createBrowserRouter([
         id: "game",
         children: [
           {
-            path: "/game/:address/betting",
+            path: "/game/:address/bet",
             element: <Betting />,
             action: bettingAction,
+          },
+          {
+            path: "/game/:address/funds",
+            element: <Funding/>,
+            action: fundingAction,
+          },
+          {
+            path: "/game/:address/placing",
+            element: <Placing/>,
           },
         ],
       },
@@ -46,23 +60,22 @@ const myRouter = createBrowserRouter([
   },
 ]);
 
+
 const App = () => {
   const {
     state: { contract, accounts },
   } = useEth();
-  
-useEffect(()=>{},[accounts]);
 
-  
+  useEffect(() => {}, [accounts]);
 
   return (
     <ThemeProvider theme={customTheme}>
       <AlertProvider>
-      <CssBaseline />
-      <Box sx={{ backgroundColor: customTheme.palette.background.default }}>
-        <Navbar/>
-        {contract ? <RouterProvider router={myRouter} /> : null};
-      </Box>
+        <CssBaseline />
+        <Box sx={{ backgroundColor: customTheme.palette.background.default }}>
+          <Navbar />
+          {contract ? <RouterProvider router={myRouter} /> : null}
+        </Box>
       </AlertProvider>
     </ThemeProvider>
   );
