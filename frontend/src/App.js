@@ -11,13 +11,23 @@ import {
   action as gameAction,
   loader as gameLoader,
 } from "./components/game/Game";
-import {
-  Funding,
-  action as fundingAction
-} from "./components/game/Funding";
-import { Betting, action as bettingAction } from "./components/game/Betting";
 import { Waiting, loader as waitingLoader } from "./components/game/Waiting";
-import { Placing } from "./components/game/Placing";
+import { Funding, action as fundingAction } from "./components/game/Funding";
+import { Betting, action as bettingAction } from "./components/game/Betting";
+import { Placing, action as placingAction } from "./components/game/Placing";
+import {
+  Attacking,
+  action as attackingAction,
+  loader as attackingLoader
+} from "./components/game/Attacking";
+import {
+  End,
+  action as endAction
+} from "./components/game/End";
+import {
+  Withdraw,
+  action as withdrawAction,
+} from "./components/game/Withdraw";
 import { useEth } from "./contexts/EthContext";
 import { CssBaseline, Box } from "@mui/material";
 import { AlertProvider } from "./contexts/AlertContext";
@@ -26,9 +36,7 @@ import AlertPopup from "./components/utility/AlertPopup";
 const myRouter = createBrowserRouter([
   {
     path: "/",
-    element:       
-    (<AlertPopup />,
-     <Root />),
+    element: ((<AlertPopup />), (<Root />)),
     errorElement: <Error />,
     children: [
       { path: "/home", element: <Home />, action: homeAction },
@@ -47,19 +55,35 @@ const myRouter = createBrowserRouter([
           },
           {
             path: "/game/:address/funds",
-            element: <Funding/>,
+            element: <Funding />,
             action: fundingAction,
           },
           {
             path: "/game/:address/placing",
-            element: <Placing/>,
+            element: <Placing />,
+            action: placingAction,
+          },
+          {
+            path: "/game/:address/attacking",
+            element: <Attacking />,
+            action: attackingAction,
+            loader: attackingLoader,
+          },
+          {
+            path: "/game/:address/end",
+            element: <End />,
+            action: endAction,
+          },
+          {
+            path: "/game/:address/withdraw",
+            element: <Withdraw />,
+            action: withdrawAction,
           },
         ],
       },
     ],
   },
 ]);
-
 
 const App = () => {
   const {

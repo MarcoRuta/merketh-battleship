@@ -25,7 +25,6 @@ export const Root = () => {
 
     const handleNewGame = (e) => {
       const { game } = e.returnValues;
-      console.log("fhlajhsfljhasf");
       if (location.pathname === "/home" || location.pathname ==="/") {
         navigate(`/wait/${game}`);
         setAlert("Game created", "success");

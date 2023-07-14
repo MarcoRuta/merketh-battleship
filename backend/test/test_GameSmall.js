@@ -176,3 +176,4 @@ contract("Test Game contract", (accounts) => {
       });
     });
   });
+  

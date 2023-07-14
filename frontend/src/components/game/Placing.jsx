@@ -1,41 +1,50 @@
 import { Form, useRouteLoaderData, useNavigate } from "react-router-dom";
-import React, { useEffect, useState } from "react";
-import { gameContractFromAddress, getWeb3Instance } from "../../utils/utils";
+import React, { useState, useEffect } from "react";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
+import { CustomButton, PlacingBoard } from "./../../utils/CustomTheme.jsx";
 import {
-  customTheme,
-  CustomButton,
-  CustomButtonBox,
-  CustomTextField,
-  CustomBoard,
-  GameBox,
-  InfoText,
-} from "./../../utils/CustomTheme.jsx";
-import {
-  ThemeProvider,
-  Box,
-  Typography,
-  Container,
-  IconButton,
-  FormControl,
-  InputLabel,
-  Input,
-} from "@mui/material";
+  getWeb3Instance,
+  gameContractFromAddress,
+  rndNonce,
+  saveBoard,
+  saveBoardTree,
+} from "./../../utils/utils";
+import { Typography, Container } from "@mui/material";
+import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
 export const action = async ({ request }) => {
   const form = await request.formData();
-  const intent = form.get("intent");
   const address = form.get("address");
   const boardState = form.get("boardState");
+  const contract = gameContractFromAddress(address);
+  const accounts = await getWeb3Instance().eth.getAccounts();
+
+  const filteredBoardState = boardState
+    .split(",")
+    .filter((value) => value !== "");
+
+  // Retrieve the board values and prepare the tree leaves
+  const leafValues = [];
+  for (let i = 0; i < filteredBoardState.length; i++) {
+    const tileValue = filteredBoardState[i];
+    leafValues.push([parseInt(tileValue), rndNonce(), i]);
+  }
+
+  // Merkle tree of the board
+  const tree = StandardMerkleTree.of(leafValues, ["bool", "uint256", "uint8"]);
+  const root = tree.root;
+
+  // Store the tree and the root in the local storage
+  await saveBoard(leafValues);
+  await saveBoardTree(tree.dump());
+
   try {
-    switch (intent) {
-      case "commitBoard":
-        console.log(boardState);
-    }
+    await contract.methods.commitBoard(root).send({ from: accounts[0] });
   } catch (err) {
     console.log(err);
   }
+
   return null;
 };
 
@@ -45,12 +54,37 @@ export const Placing = () => {
   } = useEth();
   const {
     game,
-    data: { fleetSize, boardSize },
+    data: {
+      fleetSize,
+      boardSize,
+      playerOne,
+      playerTwo,
+      playerOneBoard,
+      playerTwoBoard,
+    },
   } = useRouteLoaderData("game");
 
+  const myBoard = accounts[0] === playerOne ? playerOneBoard : playerTwoBoard;
   const navigate = useNavigate();
-  const setAlert = useAlert();
+  const { setAlert } = useAlert();
   const size = Math.sqrt(boardSize);
+
+  useEffect(() => {
+    const handleBoardCommitted = () => {
+      navigate(`/game/${game._address}/attacking`);
+      setAlert("Boards committed!", "success");
+    };
+
+    // Setup listener for BetProposal event with opponent filter
+    const listener = game.events
+      .BoardsCommitted()
+      .on("data", handleBoardCommitted);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      listener.unsubscribe();
+    };
+  }, [game, navigate]);
 
   // Define a state to store the board state
   const [boardState, setBoardState] = useState([]);
@@ -66,36 +100,44 @@ export const Placing = () => {
         sx={{
           width: "100%",
           display: "flex",
-          flexDirection: "row",
+          flexDirection: "column",
           alignItems: "center",
-          gap: 15,
+          gap: 5,
         }}
       >
-        <CustomBoard
+        <PlacingBoard
           size={size}
           fleetSize={fleetSize}
           onBoardStateChange={handleBoardStateChange}
-        ></CustomBoard>
+        ></PlacingBoard>
         <Container
           sx={{
             width: "100%",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 15,
+            gap: 5,
           }}
         >
-          <Form method="post">
-            <input type="hidden" name="address" value={game._address} />
-            <input type="hidden" name="intent" value="commitBoard" />
-            <input type="hidden" name="boardState" value={boardState} />
-            <CustomButton type="submit" className="btn btn-primary">
-              Commit board
-            </CustomButton>
-          </Form>
-          <Typography variant="h7" color="background.paper" fontWeight="bold">
-            You must place your entire fleet ({fleetSize})!
-          </Typography>
+          {myBoard !==
+          "0x0000000000000000000000000000000000000000000000000000000000000000" ? (
+            <Typography variant="h7" color="primary" fontWeight="bold">
+              Waiting for the opponent
+            </Typography>
+          ) : boardState.flat().filter((value) => value === 1).length ===
+            parseInt(fleetSize) ? (
+            <Form method="post">
+              <input type="hidden" name="address" value={game._address} />
+              <input type="hidden" name="boardState" value={boardState} />
+              <CustomButton type="submit" className="btn btn-primary">
+                Commit board
+              </CustomButton>
+            </Form>
+          ) : (
+            <Typography variant="h7" color="white" fontWeight="bold">
+              You must place your entire fleet on the board!
+            </Typography>
+          )}
         </Container>
       </Container>
     </>

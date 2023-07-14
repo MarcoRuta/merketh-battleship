@@ -1,7 +1,8 @@
 import { createTheme } from "@mui/material/styles";
 import React, { useState, useEffect } from "react";
 import { Button, Box, Typography, TextField } from "@mui/material";
-import Logo from "../assets/logo.svg";
+import shipImage from "../assets/ship.png";
+import seaImage from "../assets/sea.png";
 
 // Custom theme
 export const customTheme = createTheme({
@@ -77,7 +78,37 @@ export const GameBox = ({
       alignItems: "center",
       backgroundColor: "rgba(0, 0, 0, 0.05)",
       backdropFilter: "blur(10px)",
-      padding: "15px",
+      padding: "50px",
+      borderRadius: "5px",
+      position: "fixed",
+      width: { width },
+      bottom: { bottom },
+      left: { left },
+      right: { right },
+    }}
+  >
+    {children}
+  </Box>
+);
+
+// Custom box
+export const StatusBox = ({
+  children,
+  flexDirection,
+  width,
+  right,
+  bottom,
+  left,
+}) => (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: { flexDirection },
+      gap: 1,
+      alignItems: "center",
+      backgroundColor: "rgba(0, 0, 0, 0.05)",
+      backdropFilter: "blur(10px)",
+      padding: "10px",
       borderRadius: "5px",
       position: "fixed",
       width: { width },
@@ -142,7 +173,7 @@ export const BetTextField = ({ name, onChange, value, label }) => (
   />
 );
 
-export const CustomBoard = ({ size, fleetSize, onBoardStateChange }) => {
+export const PlacingBoard = ({ size, fleetSize, onBoardStateChange }) => {
   const [boardState, setBoardState] = useState(
     Array.from({ length: size }, () => Array(size).fill(0))
   );
@@ -181,8 +212,8 @@ export const CustomBoard = ({ size, fleetSize, onBoardStateChange }) => {
     return (
       <div
         style={{
-          width: `${size * 80}px`,
-          height: `${size * 80}px`,
+          width: `${size * 75}px`,
+          height: `${size * 75}px`,
           display: "flex",
           flexWrap: "wrap",
         }}
@@ -193,13 +224,15 @@ export const CustomBoard = ({ size, fleetSize, onBoardStateChange }) => {
               key={`${rowIndex}-${colIndex}`}
               onClick={() => handleClick(rowIndex, colIndex)}
               style={{
-                width: "80px",
-                height: "80px",
-                border: "1px solid black",
-                marginRight: "-1px",
-                marginBottom: "-1px",
+                border: "1px solid white",
                 cursor: "pointer",
-                backgroundColor: value === 1 ? "green" : "#B1AAEF",
+                backgroundImage:
+                  value === 0 ? `url(${seaImage})` : `url(${shipImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                width: `${100 / size}%`,
+                paddingBottom: `${100 / size}%`,
               }}
             />
           ))
@@ -212,15 +245,214 @@ export const CustomBoard = ({ size, fleetSize, onBoardStateChange }) => {
     <div>
       {renderBoard()}
       <p>
-      <Typography variant="h7" color="background.paper" fontWeight="bold">
-        Remaining ships: 
-      </Typography>
-      <Typography variant="h7" color="white" fontWeight="bold">
-      {fleetSize - numberOfSetTiles}
-      </Typography>
+        <Typography variant="h7" color="background.paper" fontWeight="bold">
+          Remaining ships:
+        </Typography>
+        <Typography variant="h7" color="white" fontWeight="bold">
+          {fleetSize - numberOfSetTiles}
+        </Typography>
       </p>
     </div>
   );
+};
+
+export const DefendingBoard = ({
+  size,
+  fleetSize,
+  board,
+  shots,
+  onBoardStateChange,
+}) => {
+  const [boardState, setBoardState] = useState(
+    Array.from({ length: size }, () => Array(size).fill({ ship: 0, shot: 4 }))
+  );
+
+  useEffect(() => {
+    const boardArray = [];
+    for (const key in board) {
+      const subArray = board[key];
+      const isShip = subArray[0];
+      const index = subArray[2];
+      boardArray.push(isShip, index);
+    }
+
+    const newBoardState = Array.from({ length: size }, () =>
+      Array(size).fill({ ship: 0, shot: 4 })
+    );
+
+    for (let i = 0; i < boardArray.length; i += 2) {
+      const index = boardArray[i + 1];
+      const value = boardArray[i] === 0 ? 0 : 1;
+      const row = Math.floor(index / size);
+      const col = index % size;
+
+      const tile = { ...newBoardState[row][col] };
+      tile.ship = value;
+      newBoardState[row][col] = tile;
+    }
+
+    // Update the shots
+    shots.forEach((shot) => {
+      const { index, state } = shot;
+      const row = Math.floor(index / size);
+      const col = index % size;
+
+      let shotValue = 4;
+      if (state === "0") {
+        shotValue = 0;
+      } else if (state === "1") {
+        shotValue = 1;
+      } else if (state === "2") {
+        shotValue = 2;
+      }
+
+      const tile = { ...newBoardState[row][col] };
+      tile.shot = shotValue;
+      newBoardState[row][col] = tile;
+    });
+
+    setBoardState(newBoardState);
+  }, [size, board, shots]);
+
+  useEffect(() => {
+    // Invoke the onBoardStateChange callback with the updated board state
+    onBoardStateChange(boardState);
+  }, [boardState, onBoardStateChange]);
+
+  const renderBoard = () => {
+    return (
+      <div
+        style={{
+          width: `${size * 65}px`,
+          height: `${size * 65}px`,
+          display: "flex",
+          flexWrap: "wrap",
+        }}
+      >
+        {boardState.map((row, rowIndex) =>
+          row.map((value, colIndex) => (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              style={{
+                border: "1px solid white",
+                cursor: "pointer",
+                backgroundColor:
+                  value.shot === 0
+                    ? "blue"
+                    : value.shot === 1
+                    ? "red"
+                    : value.shot === 2
+                    ? "green" : "background.paper",
+                backgroundImage:
+                  value.ship === 0 ? `none` : `url(${shipImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                width: `${100 / size}%`,
+                paddingBottom: `${100 / size}%`,
+              }}
+            />
+          ))
+        )}
+      </div>
+    );
+  };
+
+  return <div>{renderBoard()}</div>;
+};
+
+export const AttackingBoard = ({
+  size,
+  fleetSize,
+  shots,
+  onBoardStateChange,
+  canAttack,
+  onTileClick,
+}) => {
+  const [boardState, setBoardState] = useState(
+    Array.from({ length: size }, () => Array(size).fill(4))
+  );
+
+  useEffect(() => {
+    const newBoardState = Array.from({ length: size }, () =>
+      Array(size).fill(4)
+    );
+
+    // Update the shots
+    shots.forEach((shot) => {
+      const { index, state } = shot;
+      const row = Math.floor(index / size);
+      const col = index % size;
+
+      let shotValue = 4;
+      if (state === "0") {
+        shotValue = 0;
+      } else if (state === "1") {
+        shotValue = 1;
+      } else if (state === "2") {
+        shotValue = 2;
+      }
+
+      newBoardState[row][col] = shotValue;
+    });
+
+    setBoardState(newBoardState);
+  }, [size, shots]);
+
+  useEffect(() => {
+    // Invoke the onBoardStateChange callback with the updated board state
+    onBoardStateChange(boardState);
+  }, [boardState, onBoardStateChange]);
+
+  const renderBoard = () => {
+    const handleTileClick = (rowIndex, colIndex) => {
+      const index = rowIndex * size + colIndex;
+      onTileClick(index, boardState[rowIndex][colIndex]);
+    };
+
+    return (
+      <div
+        style={{
+          width: `${size * 65}px`,
+          height: `${size * 65}px`,
+          display: "flex",
+          flexWrap: "wrap",
+        }}
+      >
+        {boardState.map((row, rowIndex) =>
+          row.map((value, colIndex) => {
+
+            return (
+              <div
+              key={`${rowIndex}-${colIndex}`}
+              style={{
+                border: "1px solid white",
+                cursor: canAttack ? "pointer" : "default",
+                backgroundColor:
+                  value === 0
+                    ? "blue"
+                    : value === 1
+                    ? "red"
+                    : value === 2
+                    ? "green" : "background.paper",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                width: `${100 / size}%`,
+                paddingBottom: `${100 / size}%`,
+              }}
+              onClick={() =>
+                canAttack ? handleTileClick(rowIndex, colIndex) : null
+              }
+            />
+            );
+          })
+        )}
+      </div>
+    );
+  };
+
+  return <div>{renderBoard()}</div>;
 };
 
 export const InfoText = () => (

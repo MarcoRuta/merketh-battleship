@@ -28,7 +28,7 @@ const setupGame = async (playerOne, playerTwo) => {
 };
 
 
-contract("Test Game contract - forfait", (accounts) => {
+contract("Test Game contract - forfeit", (accounts) => {
   let game;
   const playerOne = accounts[0];
   const playerTwo = accounts[1];
@@ -98,8 +98,8 @@ contract("Test Game contract - forfait", (accounts) => {
 
     // Player two forfaits
     it("PlayerTwo forfaits", async () => {
-        const tx = await game.forfait({from: playerTwo});
-        truffleAssert.eventEmitted(tx, "Forfait");
+        const tx = await game.forfeit({from: playerTwo});
+        truffleAssert.eventEmitted(tx, "Forfeit");
         });
 
     it("Winner (playerOne) withdraws its winnings", async () => {

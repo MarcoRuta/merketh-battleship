@@ -1,33 +1,23 @@
 import React, { useEffect } from "react";
 import { gameContractFromAddress, getWeb3Instance } from "../../utils/utils";
 import {
-  ThemeProvider,
   Box,
   Typography,
   Container,
   IconButton,
   FormControl,
-  InputLabel,
-  Input,
 } from "@mui/material";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
 import {
   Form,
-  Outlet,
-  redirect,
-  useLoaderData,
   useRouteLoaderData,
-  useLocation,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import {
-  customTheme,
   CustomButton,
-  CustomButtonBox,
-  CustomTextField,
   BetTextField,
-  InfoText,
 } from "./../../utils/CustomTheme.jsx";
 import { Send as SendIcon } from "@mui/icons-material";
 
@@ -67,7 +57,8 @@ export const Betting = () => {
     data: { playerOne, playerTwo, playerOneBet, playerTwoBet },
   } = useRouteLoaderData("game");
   const navigate = useNavigate();
-  const setAlert = useAlert();
+  const location = useLocation();
+  const {setAlert} = useAlert();
 
   const opponent = playerOne === accounts[0] ? playerTwo : playerOne;
   const opponentBet = playerOne === accounts[0] ? playerTwoBet : playerOneBet;
@@ -75,6 +66,7 @@ export const Betting = () => {
 
   useEffect(() => {
     const handleBetProposal = () => {
+      setAlert("The opponent proposed a bet","warning");
       navigate(`/game/${game._address}/bet`);
     };
 
@@ -87,7 +79,7 @@ export const Betting = () => {
     return () => {
       listener.unsubscribe();
     };
-  }, [game, navigate, opponent, opponentBet]);
+  }, [game, navigate, location, opponent, opponentBet, setAlert]);
 
   const bettingView = () => (
     <>
@@ -113,7 +105,7 @@ export const Betting = () => {
             your bet
           </Typography>
           <Typography variant="body1" color="white">
-            {yourBet}
+            {yourBet} wei
           </Typography>
           <Box mt={10} />
           <Form method="post">
@@ -156,7 +148,7 @@ export const Betting = () => {
             opponent bet
           </Typography>
           <Typography variant="body1" color="white">
-            {opponentBet}
+            {opponentBet} wei
           </Typography>
           <Box mt={10} />
           <Form method="post">

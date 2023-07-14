@@ -4,22 +4,11 @@ import { gameContractFromAddress, getWeb3Instance } from "../../utils/utils";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
 import {
-  customTheme,
   CustomButton,
-  CustomButtonBox,
-  CustomTextField,
-  GameBox,
-  InfoText,
 } from "./../../utils/CustomTheme.jsx";
 import {
-  ThemeProvider,
-  Box,
   Typography,
   Container,
-  IconButton,
-  FormControl,
-  InputLabel,
-  Input,
 } from "@mui/material";
 
 export const action = async ({ request }) => {
@@ -48,13 +37,13 @@ export const Funding = () => {
   } = useRouteLoaderData("game");
 
   const navigate = useNavigate();
-  const setAlert = useAlert();
+  const {setAlert} = useAlert();
 
-  const opponent = playerOne === accounts[0] ? playerTwo : playerOne;
+
 
   useEffect(() => {
     const handleFunding = () => {
-      console.log("ready to go placing");
+      setAlert("ETH funded!","success");
       navigate(`/game/${game._address}/placing`);
     };
 
@@ -65,7 +54,7 @@ export const Funding = () => {
     return () => {
       listener.unsubscribe();
     };
-  }, [game, navigate, hasPlayerOneFund, hasPlayerTwoFund]);
+  }, [game, navigate, hasPlayerOneFund, hasPlayerTwoFund, bet ]);
 
   return (
     <>
@@ -82,8 +71,8 @@ export const Funding = () => {
           Agreed bet:
         </Typography>
         <Typography variant="body1">{bet} wei</Typography>
-        {(accounts[0] == playerOne && hasPlayerOneFund) ||
-        (accounts[0] == playerTwo && hasPlayerTwoFund) ? (
+        {(accounts[0] === playerOne && hasPlayerOneFund) ||
+        (accounts[0] === playerTwo && hasPlayerTwoFund) ? (
           <Typography variant="body1" color="primary" fontWeight="bold">
             Waiting for opponent
           </Typography>

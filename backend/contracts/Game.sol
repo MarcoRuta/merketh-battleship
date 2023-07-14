@@ -114,8 +114,8 @@ contract Game {
     // Emitted when both players have deposited the agreed amount.
     event FundsDeposited();
 
-    // Emitted when a player forfait.
-    event Forfait();
+    // Emitted when a player forfeit.
+    event Forfeit();
 
     // Emitted when both players have committed their boards.
     event BoardsCommitted();
@@ -285,11 +285,11 @@ contract Game {
         }
     }
 
-    /*Function that can be used to forfait, the adversary automatically wins.
+    /*Function that can be used to forfeit, the adversary automatically wins.
      * Can be called only if the player has fund his bet (after Funding phase)*/
-    function forfait() external onlyPlayer Fund {
+    function forfeit() external onlyPlayer Fund {
         address opponent = msg.sender == owner ? adversary : owner;
-        emit Forfait();
+        emit Forfeit();
         _declareWinner(opponent);
     }
 

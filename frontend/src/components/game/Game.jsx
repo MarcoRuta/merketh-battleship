@@ -16,24 +16,11 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import { Box, Typography, Container } from "@mui/material";
 import {
-  ThemeProvider,
-  Box,
-  Typography,
-  Container,
-  IconButton,
-  FormControl,
-  InputLabel,
-  Input,
-} from "@mui/material";
-import { FlagCircle as FlagIcon } from "@mui/icons-material";
-import {
-  customTheme,
   CustomButton,
-  CustomButtonBox,
-  CustomTextField,
   GameBox,
-  InfoText,
+  StatusBox,
 } from "./../../utils/CustomTheme.jsx";
 
 export const loader = async ({ params }) => {
@@ -43,13 +30,21 @@ export const loader = async ({ params }) => {
     const playerTwo = await game.methods.adversary().call();
     const playerOneData = await game.methods.players(playerOne).call();
     const playerTwoData = await game.methods.players(playerTwo).call();
+    const playerOneShots = await game.methods.getShotsTaken(playerOne).call();
+    const playerTwoShots = await game.methods.getShotsTaken(playerTwo).call();
     const fleetSize = await game.methods.fleetSize().call();
     const boardSize = await game.methods.boardSize().call();
     const data = {
       playerOne,
       playerTwo,
+      playerOneShots,
+      playerTwoShots,
       hasPlayerOneFund: playerOneData.hasPaid,
       hasPlayerTwoFund: playerTwoData.hasPaid,
+      isPlayerOneAKF: playerOneData.afk,
+      isPlayerTwoAFK: playerTwoData.afk,
+      playerOneBoard: playerOneData.board,
+      playerTwoBoard: playerTwoData.board,
       fleetSize,
       boardSize,
       currentPhase: await game.methods.gamePhase().call(),
@@ -75,11 +70,19 @@ export const action = async ({ request }) => {
   const loc = form.get("location");
   try {
     switch (intent) {
-      case "forfait":
-        await contract.methods.forfait().send({ from: accounts[0] });
+      case "forfeit":
+        await contract.methods.forfeit().send({ from: accounts[0] });
+        break;
 
       case "reportAFK":
         await contract.methods.reportAFK().send({ from: accounts[0] });
+        break;
+
+      case "checkAFK":
+        await contract.methods.checkAFK().send({ from: accounts[0] });
+        break;
+
+      default:
         break;
     }
   } catch (err) {
@@ -91,14 +94,16 @@ export const action = async ({ request }) => {
 export const Game = () => {
   const {
     game,
-    data: { playerOne, playerTwo, currentPhase, bet, playerTurn, winner },
+    data: { playerOne, playerTwo, currentPhase, playerTurn },
   } = useLoaderData();
+
   const {
     state: { accounts },
   } = useEth();
+
   const navigate = useNavigate();
   const location = useLocation();
-  const {setAlert} = useAlert();
+  const { setAlert } = useAlert();
 
   useEffect(() => {
     (async () => {
@@ -109,13 +114,28 @@ export const Game = () => {
     })();
 
     (async () => {
+      game.events.Winner().on("data", () => {
+        navigate(`/game/${game._address}/end`);
+        setAlert("We have a winner!", "success");
+      });
+    })();
+
+    (async () => {
+      game.events.Forfeit().on("data", () => {
+        navigate(`/game/${game._address}/withdraw`);
+        setAlert("A player forfeited", "warning");
+      });
+    })();
+
+    (async () => {
       game.events.PlayerAFK().on("data", (e) => {
         e.returnValues.player !== accounts[0]
           ? setAlert("Opponent has been reported as AFK.", "success")
           : setAlert("You have been reported as AFK.", "warning");
       });
     })();
-  }, []);
+    
+  }, [currentPhase, location]);
 
   const gameStatusBar = () => (
     <>
@@ -138,63 +158,63 @@ export const Game = () => {
             gap: 0,
           }}
         >
-          <GameBox flexDirection="column" left="20px" width="200px">
+          <StatusBox flexDirection="column" left="20px" width="200px">
             <Box width="30px" />
             <Typography variant="body1" color="primary" fontWeight="bold">
               {phaseToString(currentPhase)}
             </Typography>
-            {playerTurn !== "0x0000000000000000000000000000000000000000" ? (
-              playerTurn === accounts[0] ? (
-                <>
-                  <Typography color="green" fontWeight="bold">
-                    Your turn
-                  </Typography>
-                </>
+            {isGameStarted(currentPhase) === true ? (
+              playerTurn !== "0x0000000000000000000000000000000000000000" ? (
+                playerTurn === accounts[0] ? (
+                  <>
+                    <Typography color="green" fontWeight="bold">
+                      Your turn
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <Typography color="red" fontWeight="bold">
+                      Opponent Turn
+                    </Typography>
+                  </>
+                )
               ) : (
-                <>
-                  <Typography color="red" fontWeight="bold">
-                    Opponent Turn
-                  </Typography>
-                </>
+                <></>
               )
             ) : (
-              <></>
+              <> </>
             )}{" "}
             {isGameStarted(currentPhase) ? (
               <>
                 {" "}
+                <Form method="post" id="checkAFKForm" >
+                  <input type="hidden" name="address" value={game._address} />
+                  <input type="hidden" name="intent" value="checkAFK" />
+                </Form>
                 <Form method="post">
-                  <input
-                    type="hidden"
-                    name="address"
-                    value={game._address}
-                  />
+                  <input type="hidden" name="address" value={game._address} />
                   <input type="hidden" name="intent" value="reportAFK" />
                   <CustomButton variant="contained" color="primary">
                     report afk
                   </CustomButton>
                 </Form>
                 <Form method="post">
-                  <input
-                    type="hidden"
-                    name="address"
-                    value={game._address}
-                  />
-                  <input type="hidden" name="intent" value="forfait" />
+                  <input type="hidden" name="address" value={game._address} />
+                  <input type="hidden" name="intent" value="forfeit" />
                   <CustomButton variant="contained" color="primary">
-                    forfait
+                    forfeit
                   </CustomButton>
                 </Form>{" "}
               </>
             ) : (
               <></>
             )}
-          </GameBox>
+          </StatusBox>
         </Container>
         <GameBox width="80%" right="50px">
-        <Outlet />
+          <Outlet />
         </GameBox>
-        <GameBox bottom="20px">
+        <StatusBox bottom="20px">
           <Typography variant="body1" color="primary" fontWeight="bold">
             game:
           </Typography>
@@ -208,7 +228,7 @@ export const Game = () => {
           <Typography variant="body1" color="white">
             {accounts[0] === playerOne ? playerTwo : playerOne}{" "}
           </Typography>
-        </GameBox>
+        </StatusBox>
       </Container>
     </>
   );
