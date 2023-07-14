@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import AlertPopup from "./utility/AlertPopup";
+import { AlertPopup } from "./customTheme";
 import { useEth } from "../contexts/EthContext";
 import { useAlert } from "../contexts/AlertContext";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";

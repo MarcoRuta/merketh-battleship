@@ -2,14 +2,14 @@ import { Form, useRouteLoaderData, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
-import { CustomButton, PlacingBoard } from "./../../utils/CustomTheme.jsx";
+import { CustomButton, PlacingBoard } from "./../customTheme";
 import {
   getWeb3Instance,
   gameContractFromAddress,
   rndNonce,
   saveBoard,
   saveBoardTree,
-} from "./../../utils/utils";
+} from "./../../utils";
 import { Typography, Container } from "@mui/material";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
@@ -100,7 +100,7 @@ export const Placing = () => {
         sx={{
           width: "100%",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "center",
           gap: 5,
         }}

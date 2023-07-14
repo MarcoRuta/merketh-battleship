@@ -1,13 +1,13 @@
 import React from "react";
 import { useEffect } from "react";
 import Logo from "../../assets/logo.svg";
-import { gameContractFromAddress } from "../../utils/utils";
+import { gameContractFromAddress } from "../../utils";
 import { useLocation, redirect, useLoaderData, useNavigate } from "react-router-dom";
 import { useEth } from "./../../contexts/EthContext";
 import { useAlert } from "./../../contexts/AlertContext";
 import { DefaultCopyField } from "@eisberg-labs/mui-copy-field";
 import { ThemeProvider, Box, Typography, Container } from "@mui/material";
-import { customTheme } from "./../../utils/CustomTheme.jsx";
+import { customTheme } from "./../customTheme";
 
 export const loader = ({ params }) => {
   try {

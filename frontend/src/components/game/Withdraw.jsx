@@ -3,12 +3,12 @@ import {
   gameContractFromAddress,
   getWeb3Instance,
   loadBoardTree,
-} from "../../utils/utils";
+} from "../../utils";
 import { Box, Typography, Container } from "@mui/material";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
 import { Form, useRouteLoaderData } from "react-router-dom";
-import { CustomButton } from "./../../utils/CustomTheme.jsx";
+import { CustomButton } from "./../customTheme";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
 export const action = async ({ request }) => {

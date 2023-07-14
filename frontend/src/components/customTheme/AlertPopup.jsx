@@ -3,7 +3,7 @@ import { useAlert } from '../../contexts/AlertContext';
 
 
 // severity: error || warning || info || success
-const AlertPopup = () => {
+export const AlertPopup = () => {
   const { text, type } = useAlert();
 
   if (text && type) {

@@ -1,8 +1,8 @@
 import React from "react";
 import { AppBar, Toolbar, Typography } from "@mui/material";
-import { useEth } from "./../contexts/EthContext";
+import { useEth } from "./../../contexts/EthContext";
 
-const Navbar = () => {
+export const CustomNavbar = () => {
   const {
     state: { accounts },
   } = useEth();
@@ -40,4 +40,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+

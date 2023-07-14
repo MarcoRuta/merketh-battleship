@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { gameContractFromAddress, getWeb3Instance } from "../../utils/utils";
+import { gameContractFromAddress, getWeb3Instance } from "../../utils";
 import {
   Box,
   Typography,
@@ -17,8 +17,8 @@ import {
 } from "react-router-dom";
 import {
   CustomButton,
-  BetTextField,
-} from "./../../utils/CustomTheme.jsx";
+  CustomSmallTextField,
+} from "./../customTheme";
 import { Send as SendIcon } from "@mui/icons-material";
 
 export const action = async ({ request }) => {
@@ -121,7 +121,7 @@ export const Betting = () => {
               <input type="hidden" name="address" value={game._address} />
               <input type="hidden" name="intent" value="proposeBet" />
               <FormControl>
-                <BetTextField name="betAmount" label="bet"></BetTextField>
+                <CustomSmallTextField name="betAmount" label="bet"></CustomSmallTextField>
               </FormControl>
               <IconButton
                 color="primary"

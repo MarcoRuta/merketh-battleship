@@ -9,14 +9,14 @@ export const getWeb3Instance = () => {
 
 export const gameContractFromAddress = (address) => {
   const web3 = getWeb3Instance();
-  const { abi } = require("./../contracts/Game.json");
+  const { abi } = require("./contracts/Game.json");
   const contract = new web3.eth.Contract(abi, address);
   return contract;
 };
 
 export const gamesManagerContractFromAddress = (address) => {
   const web3 = getWeb3Instance();
-  const { abi } = require("./../contracts/GamesManager.json");
+  const { abi } = require("./contracts/GamesManager.json");
   const contract = new web3.eth.Contract(abi, address);
   return contract;
 };

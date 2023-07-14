@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
 import { ThemeProvider } from "@mui/material/styles";
-import { customTheme } from "./utils/CustomTheme.jsx";
-import Navbar from "./components/Navbar";
+import { customTheme, AlertPopup, CustomNavbar } from "./components/customTheme";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Root } from "./components/Root";
-import { Error } from "./components/utility/Error";
+import { Error } from "./components/game/Error";
 import { Home, action as homeAction } from "./components/Home";
 import {
   Game,
@@ -31,7 +30,6 @@ import {
 import { useEth } from "./contexts/EthContext";
 import { CssBaseline, Box } from "@mui/material";
 import { AlertProvider } from "./contexts/AlertContext";
-import AlertPopup from "./components/utility/AlertPopup";
 
 const myRouter = createBrowserRouter([
   {
@@ -97,7 +95,7 @@ const App = () => {
       <AlertProvider>
         <CssBaseline />
         <Box sx={{ backgroundColor: customTheme.palette.background.default }}>
-          <Navbar />
+          <CustomNavbar />
           {contract ? <RouterProvider router={myRouter} /> : null}
         </Box>
       </AlertProvider>

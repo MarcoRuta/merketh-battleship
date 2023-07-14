@@ -11,14 +11,14 @@ import {
   CustomButton,
   AttackingBoard,
   DefendingBoard,
-} from "./../../utils/CustomTheme.jsx";
+} from "./../customTheme";
 import {
   getWeb3Instance,
   gameContractFromAddress,
   ShotType,
   loadBoardTree,
   loadBoard,
-} from "./../../utils/utils";
+} from "./../../utils";
 import { Typography, Container } from "@mui/material";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
@@ -129,6 +129,7 @@ export const Attacking = () => {
   };
 
   const handleTileClick = (index, state) => {
+    console.log(index,state)
     if (state !== 4) {
       setAlert("You already shot that cell!", "error");
     } else {
@@ -150,25 +151,26 @@ export const Attacking = () => {
     <>
       <Container
         sx={{
-          width: "90%",
+          width: "100%",
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
-          gap: 15,
+          gap: 30,
         }}
       >
         <Container
           sx={{
-            width: "90%",
+            width: "300px",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 1,
+            gap: 5,
           }}
         >
           {" "}
           <Typography variant="body1" color="primary" fontWeight="bold">
-            Your board
+            MY BOARD
           </Typography>
           <DefendingBoard
             size={size}
@@ -178,17 +180,27 @@ export const Attacking = () => {
             onBoardStateChange={handleMyBoardStateChange}
           ></DefendingBoard>
         </Container>
+        <div
+          style={{
+            borderLeft: '1px solid #5E57AA',
+            width: "3px",
+            background: "#5E57AA",
+            height: "800px", 
+            margin: "0 10px", 
+          }}
+        />
         <Container
           sx={{
-            width: "90%",
+            width: "200px",
             display: "flex",
+            height: '100%', 
             flexDirection: "column",
             alignItems: "center",
-            gap: 1,
+            gap: 5,
           }}
         >
           <Typography variant="body1" color="primary" fontWeight="bold">
-            Opponent board
+            OPPONENT
           </Typography>
           <AttackingBoard
             size={size}
@@ -202,7 +214,7 @@ export const Attacking = () => {
         {playerTurn === accounts[0] ? (
           <Container
             sx={{
-              width: "100%",
+              width: "30%",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",

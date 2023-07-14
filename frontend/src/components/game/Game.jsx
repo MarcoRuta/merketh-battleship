@@ -4,7 +4,7 @@ import {
   getWeb3Instance,
   phaseToString,
   isGameStarted,
-} from "../../utils/utils";
+} from "../../utils";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
 import { useEffect } from "react";
@@ -21,7 +21,7 @@ import {
   CustomButton,
   GameBox,
   StatusBox,
-} from "./../../utils/CustomTheme.jsx";
+} from "./../customTheme";
 
 export const loader = async ({ params }) => {
   try {

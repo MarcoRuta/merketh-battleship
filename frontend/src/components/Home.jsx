@@ -14,7 +14,7 @@ import {
   CustomButtonBox,
   CustomTextField,
   InfoText,
-} from "./../utils/CustomTheme.jsx";
+} from "./customTheme";
 import Logo from "../assets/logo.svg";
 import { Search as SearchIcon } from "@mui/icons-material";
 import { useEth } from "../contexts/EthContext";
@@ -22,7 +22,7 @@ import {
   gamesManagerContractFromAddress,
   getWeb3Instance,
 
-} from "../utils/utils";
+} from "../utils";
 
 export const action = async ({ request }) => {
   const form = await request.formData();

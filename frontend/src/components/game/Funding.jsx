@@ -1,11 +1,11 @@
 import { Form, useRouteLoaderData, useNavigate } from "react-router-dom";
 import React, { useEffect } from "react";
-import { gameContractFromAddress, getWeb3Instance } from "../../utils/utils";
+import { gameContractFromAddress, getWeb3Instance } from "../../utils";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
 import {
   CustomButton,
-} from "./../../utils/CustomTheme.jsx";
+} from "./../customTheme";
 import {
   Typography,
   Container,
