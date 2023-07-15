@@ -4,21 +4,11 @@ import {
   getWeb3Instance,
   loadBoardTree,
 } from "../../utils";
-import {
-  Box,
-  Typography,
-  Container,
-} from "@mui/material";
+import { Box, Typography, Container } from "@mui/material";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
-import {
-  Form,
-  useNavigate,
-  useRouteLoaderData,
-} from "react-router-dom";
-import {
-  CustomButton,
-} from "./../customTheme";
+import { Form, useNavigate, useRouteLoaderData } from "react-router-dom";
+import { CustomButton } from "./../customTheme";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
 export const action = async ({ request }) => {
@@ -65,7 +55,7 @@ export const action = async ({ request }) => {
             from: accounts[0],
           });
         break;
-        
+
       default:
         break;
     }
@@ -88,23 +78,29 @@ export const End = () => {
 
   const opponent = playerOne === accounts[0] ? playerTwo : playerOne;
 
-
   useEffect(() => {
     const handleWinnerVerified = () => {
       navigate(`/game/${game._address}/withdraw`);
     };
 
     // Setup listener for BetProposal event with opponent filter
-    const listener = game.events
+    const listener1 = game.events
       .WinnerVerified()
       .on("data", handleWinnerVerified);
 
+    const listener2 = game.events.PlayerAFK().on("data", (e) => {
+      e.returnValues.player !== accounts[0]
+        ? setAlert("Opponent has been reported as AFK.", "success")
+        : setAlert("You have been reported as AFK.", "warning");
+      navigate(`/game/${game._address}/attacking`);
+    });
+
     // Clean up the event listener when the component unmounts
     return () => {
-      listener.unsubscribe();
+      listener1.unsubscribe();
+      listener2.unsubscribe();
     };
   }, [game]);
-
 
   const verifyView = () => (
     <>
@@ -139,6 +135,5 @@ export const End = () => {
     </>
   );
 
-  return verifyView()
-
+  return verifyView();
 };

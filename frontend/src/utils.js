@@ -24,11 +24,10 @@ export const gamesManagerContractFromAddress = (address) => {
 export const Phase = {
   Waiting: "0",
   Betting: "1",
-  Funding: "2",
-  Placement: "3",
-  Attack: "4",
-  Winner: "5",
-  End: "6",
+  Placement: "2",
+  Attack: "3",
+  Winner: "4",
+  End: "5",
 };
 
 export const ShotType = {
@@ -43,8 +42,6 @@ export const phaseToString = (phase) => {
       return "Waiting for an opponent...";
     case Phase.Betting:
       return "Is time to bet!";
-    case Phase.Funding:
-      return "Is time to fund!";
     case Phase.Placement:
       return "Place your fleet!";
     case Phase.Attack:
@@ -61,7 +58,8 @@ export const phaseToString = (phase) => {
 export const isGameStarted = (phase) => {
   return (
     phase === Phase.Placement ||
-    phase === Phase.Attack 
+    phase === Phase.Attack  || 
+    phase === Phase.Winner
   );
 };
 

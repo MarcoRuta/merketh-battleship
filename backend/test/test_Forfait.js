@@ -99,7 +99,7 @@ contract("Test Game contract - forfeit", (accounts) => {
     // Player two forfaits
     it("PlayerTwo forfaits", async () => {
         const tx = await game.forfeit({from: playerTwo});
-        truffleAssert.eventEmitted(tx, "Forfeit");
+        truffleAssert.eventEmitted(tx, "WinnerVerified");
         });
 
     it("Winner (playerOne) withdraws its winnings", async () => {

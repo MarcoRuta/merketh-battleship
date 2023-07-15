@@ -17,11 +17,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { Box, Typography, Container } from "@mui/material";
-import {
-  CustomButton,
-  GameBox,
-  StatusBox,
-} from "./../customTheme";
+import { CustomButton, GameBox, StatusBox } from "./../customTheme";
 
 export const loader = async ({ params }) => {
   try {
@@ -78,17 +74,17 @@ export const action = async ({ request }) => {
         await contract.methods.reportAFK().send({ from: accounts[0] });
         break;
 
-      case "checkAFK":
-        await contract.methods.checkAFK().send({ from: accounts[0] });
+      case "verifyAFK":
+        await contract.methods.verifyAFK().send({ from: accounts[0] });
         break;
 
       default:
         break;
     }
   } catch (err) {
-    console.log("Error in the game page: " + err);
+    console.log(err);
   }
-  return redirect(loc);
+  return null;
 };
 
 export const Game = () => {
@@ -106,35 +102,31 @@ export const Game = () => {
   const { setAlert } = useAlert();
 
   useEffect(() => {
-    (async () => {
-      game.events.BetAgreed().on("data", () => {
-        navigate(`/game/${game._address}/funds`);
-        setAlert("Agreement on the bet", "success");
-      });
-    })();
 
-    (async () => {
-      game.events.Winner().on("data", () => {
-        navigate(`/game/${game._address}/end`);
-        setAlert("We have a winner!", "success");
-      });
-    })();
+    const handleBetAgreed = () => {
+      navigate(`/game/${game._address}/funds`);
+      setAlert("Agreement on the bet", "success");
+    };
 
-    (async () => {
-      game.events.Forfeit().on("data", () => {
-        navigate(`/game/${game._address}/withdraw`);
-        setAlert("A player forfeited", "warning");
-      });
-    })();
+    const handleWinner = () => {
+      navigate(`/game/${game._address}/end`);
+      setAlert("We have a winner!", "success");
+    };
 
-    (async () => {
-      game.events.PlayerAFK().on("data", (e) => {
-        e.returnValues.player !== accounts[0]
-          ? setAlert("Opponent has been reported as AFK.", "success")
-          : setAlert("You have been reported as AFK.", "warning");
-      });
-    })();
-    
+    const handleWinnerVerified = () => {
+      navigate(`/game/${game._address}/withdraw`);
+      setAlert("Victory confirmed!", "info")
+    };
+
+      const listener1 = game.events.BetAgreed().on("data", handleBetAgreed);
+      const listener2 = game.events.Winner().on("data",handleWinner);
+      const listener3 = game.events.WinnerVerified().on("data",handleWinnerVerified);
+
+      return () => {
+        listener1.unsubscribe();
+        listener2.unsubscribe();
+        listener3.unsubscribe();
+      };
   }, [currentPhase, location]);
 
   const gameStatusBar = () => (
@@ -187,15 +179,18 @@ export const Game = () => {
             {isGameStarted(currentPhase) ? (
               <>
                 {" "}
-                <Form method="post" id="checkAFKForm" >
-                  <input type="hidden" name="address" value={game._address} />
-                  <input type="hidden" name="intent" value="checkAFK" />
-                </Form>
                 <Form method="post">
                   <input type="hidden" name="address" value={game._address} />
                   <input type="hidden" name="intent" value="reportAFK" />
                   <CustomButton variant="contained" color="primary">
                     report afk
+                  </CustomButton>
+                </Form>
+                <Form method="post">
+                  <input type="hidden" name="address" value={game._address} />
+                  <input type="hidden" name="intent" value="verifyAFK" />
+                  <CustomButton variant="contained" color="primary">
+                    verify afk
                   </CustomButton>
                 </Form>
                 <Form method="post">

@@ -6,13 +6,13 @@ contract GamesManager {
     // Maps Games that are joinable.
     mapping(Game => bool) private joinableGamesMap;
 
-    // Addresses of the Games that are joinable.
+    // Addresses of the joinable games.
     Game[] private joinableGames;
 
-    // Mapping that keeps index of the joinable games.
+    // Mapping that keeps an index of the joinable games.
     mapping(Game => uint256) private joinableGamesIndexes;
 
-    // Nonce used for pseudo-random number generation.
+    // Nonce used for gameID pseudo-random number generation.
     uint256 private nonce;
 
     ////////////
@@ -51,7 +51,7 @@ contract GamesManager {
     // Function used to join a pre-existing game knowing the ID.
     function joinGameByID(Game _game) external {
 
-        // If the game is not in the joinableGame list or the player tries to double access.
+        // If the game is not in the joinableGame list or the owner tries to double access.
         if (!joinableGamesMap[_game] || msg.sender == _game.owner()) {
             emit GameNotValid(msg.sender);
             return;
@@ -84,7 +84,7 @@ contract GamesManager {
         // Increment nonce.
         nonce++;
 
-        // Iterating the list we select the first suitable game that.
+        // Iterating the list we select the first suitable game
         bool found = false;
         for (uint256 i = random; i < joinableGames.length; i++) {
             Game game = joinableGames[(i % joinableGames.length)];

@@ -76,13 +76,21 @@ export const Placing = () => {
     };
 
     // Setup listener for BetProposal event with opponent filter
-    const listener = game.events
+    const listener1 = game.events
       .BoardsCommitted()
       .on("data", handleBoardCommitted);
 
+    const listener2 = game.events.PlayerAFK().on("data", (e) => {
+      console.log("PlayerAFK event emitted");
+      e.returnValues.player !== accounts[0]
+        ? setAlert("Opponent has been reported as AFK.", "success")
+        : setAlert("You have been reported as AFK.", "warning");
+        navigate(`/game/${game._address}/placing`);
+    });
     // Clean up the event listener when the component unmounts
     return () => {
-      listener.unsubscribe();
+      listener1.unsubscribe();
+      listener2.unsubscribe();
     };
   }, [game, navigate]);
 

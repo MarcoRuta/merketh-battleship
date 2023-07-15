@@ -7,11 +7,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
-import {
-  CustomButton,
-  AttackingBoard,
-  DefendingBoard,
-} from "./../customTheme";
+import { CustomButton, AttackingBoard, DefendingBoard } from "./../customTheme";
 import {
   getWeb3Instance,
   gameContractFromAddress,
@@ -129,7 +125,7 @@ export const Attacking = () => {
   };
 
   const handleTileClick = (index, state) => {
-    console.log(index,state)
+    console.log(index, state);
     if (state !== 4) {
       setAlert("You already shot that cell!", "error");
     } else {
@@ -138,13 +134,28 @@ export const Attacking = () => {
   };
 
   useEffect(() => {
-    (async () => {
-      game.events.ShotTaken({ filter: { player: opponent } }).on("data", () => {
-        console.log("a shot arrived!");
-        setAlert("The opponent took a shot!", "warning");
-        navigate(`/game/${game._address}/attacking`);
-      });
-    })();
+    const handleShotTaken = () => {
+      setAlert("The opponent took a shot!", "warning");
+      navigate(`/game/${game._address}/attacking`);
+    };
+
+    const listener1 = game.events
+      .ShotTaken({ filter: { player: opponent } })
+      .on("data", handleShotTaken);
+
+    const listener2 = game.events.PlayerAFK().on("data", (e) => {
+      console.log("PlayerAFK event emitted");
+      e.returnValues.player !== accounts[0]
+        ? setAlert("Opponent has been reported as AFK.", "success")
+        : setAlert("You have been reported as AFK.", "warning");
+      navigate(`/game/${game._address}/attacking`);
+    });
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      listener1.unsubscribe();
+      listener2.unsubscribe();
+    };
   }, [playerTurn, navigate]);
 
   return (
@@ -182,18 +193,18 @@ export const Attacking = () => {
         </Container>
         <div
           style={{
-            borderLeft: '1px solid #5E57AA',
+            borderLeft: "1px solid #5E57AA",
             width: "3px",
             background: "#5E57AA",
-            height: "800px", 
-            margin: "0 10px", 
+            height: "800px",
+            margin: "0 10px",
           }}
         />
         <Container
           sx={{
             width: "200px",
             display: "flex",
-            height: '100%', 
+            height: "100%",
             flexDirection: "column",
             alignItems: "center",
             gap: 5,
