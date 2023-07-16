@@ -131,6 +131,7 @@ export const DefendingBoard = ({
                   <div
                     key={`${rowIndex}-${colIndex}`}
                     style={{
+                      padding: 1,
                       border: "1px solid white",
                       cursor: "pointer",
                       backgroundImage:
@@ -144,8 +145,10 @@ export const DefendingBoard = ({
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
-                      width: `${100 / size}%`,
-                      paddingBottom: `${100 / size}%`,
+                      maxWidth: "65px",
+                      maxHeight: "65px",
+                      minWidth: "65px",
+                      minHeight: "65px",
                     }}
                   />
                 ))

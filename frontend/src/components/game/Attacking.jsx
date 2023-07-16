@@ -172,7 +172,8 @@ export const Attacking = () => {
         <Container
           sx={{
             width: "300px",
-            height: "100%",
+            minHeight: "700px",
+            paddingBottom: "64px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -196,7 +197,7 @@ export const Attacking = () => {
             borderLeft: "1px solid #5E57AA",
             width: "3px",
             background: "#5E57AA",
-            height: "800px",
+            height: "500px",
             margin: "0 10px",
           }}
         />
@@ -204,7 +205,7 @@ export const Attacking = () => {
           sx={{
             width: "200px",
             display: "flex",
-            height: "100%",
+            minHeight: "700px",
             flexDirection: "column",
             alignItems: "center",
             gap: 5,

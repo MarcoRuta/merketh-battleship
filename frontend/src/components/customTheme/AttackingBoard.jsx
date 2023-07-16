@@ -141,8 +141,10 @@ export const AttackingBoard = ({
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
-                    width: "65px",
-                    height: "65px",
+                    maxWidth: "65px",
+                    maxHeight: "65px",
+                    minWidth: "65px",
+                    minHeight: "65px",
                   }}
                   onClick={() =>
                     canAttack ? handleTileClick(rowIndex, colIndex) : null

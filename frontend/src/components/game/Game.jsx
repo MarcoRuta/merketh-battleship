@@ -104,7 +104,7 @@ export const Game = () => {
   useEffect(() => {
 
     const handleBetAgreed = () => {
-      navigate(`/game/${game._address}/funds`);
+      navigate(`/game/${game._address}/bet`);
       setAlert("Agreement on the bet", "success");
     };
 

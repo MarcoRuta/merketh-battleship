@@ -11,7 +11,6 @@ import {
   loader as gameLoader,
 } from "./components/game/Game";
 import { Waiting, loader as waitingLoader } from "./components/game/Waiting";
-import { Funding, action as fundingAction } from "./components/game/Funding";
 import { Betting, action as bettingAction } from "./components/game/Betting";
 import { Placing, action as placingAction } from "./components/game/Placing";
 import {
@@ -50,11 +49,6 @@ const myRouter = createBrowserRouter([
             path: "/game/:address/bet",
             element: <Betting />,
             action: bettingAction,
-          },
-          {
-            path: "/game/:address/funds",
-            element: <Funding />,
-            action: fundingAction,
           },
           {
             path: "/game/:address/placing",

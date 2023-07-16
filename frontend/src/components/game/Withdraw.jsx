@@ -7,7 +7,7 @@ import {
 import { Box, Typography, Container } from "@mui/material";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
-import { Form, useRouteLoaderData } from "react-router-dom";
+import { Form, useRouteLoaderData, useActionData } from "react-router-dom";
 import { CustomButton } from "./../customTheme";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
@@ -24,12 +24,15 @@ export const action = async ({ request }) => {
         await contract.methods.withdraw().send({
           from: accounts[0],
         });
+        return 1;
         break;
       default:
+        return 0;
         break;
     }
   } catch (err) {
     console.log(err);
+    return 0;
   }
   return null;
 };
@@ -43,6 +46,7 @@ export const Withdraw = () => {
     data: { playerOne, playerTwo, winner, currentPhase },
   } = useRouteLoaderData("game");
   const setAlert = useAlert();
+  const withdrawSuccess = useActionData();
 
   const withdrawView = () => (
     <>
@@ -82,5 +86,36 @@ export const Withdraw = () => {
     </>
   );
 
-  return withdrawView();
+  const end = () => (
+    <>
+      <Container
+        sx={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <Typography variant="body1" color="primary" fontWeight="bold">
+          The winner is: {winner}
+        </Typography>
+        <Box mt={5} />
+        {accounts[0] !== winner ? (
+          <Typography variant="body1" color="white" fontWeight="bold">
+            Winner verified! The game ended and you lost!
+          </Typography>
+        ) : (
+          <>
+            {" "}
+            <Typography variant="h3" color="primary" fontWeight="bold">
+              Congrats!
+            </Typography>
+          </>
+        )}
+      </Container>
+    </>
+  );
+
+  return !withdrawSuccess ? withdrawView() : end();
 };
