@@ -1,5 +1,4 @@
 import Web3 from "web3";
-import {Snackbar, Alert} from "@mui/material";
 import ReactDOM from "react-dom/client";
 import localforage from "localforage";
 
@@ -36,6 +35,16 @@ export const ShotType = {
   Miss: "2",
 };
 
+export function indexToCoordinate(size, index) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = [...Array(size).keys()].map((num) => (num + 1).toString());
+
+  const row = Math.floor(index / size) + 1;
+  const column = alphabet[index % size];
+
+  return "[" + row.toString() + ", " + column +"]";
+}
+
 export const phaseToString = (phase) => {
   switch (phase) {
     case Phase.Waiting:
@@ -55,11 +64,10 @@ export const phaseToString = (phase) => {
   }
 };
 
-export const isGameStarted = (phase) => {
+export const isAFKAllowed = (phase) => {
   return (
-    phase === Phase.Placement ||
-    phase === Phase.Attack  || 
-    phase === Phase.Winner
+    phase !== Phase.Waiting &&
+    phase !== Phase.End
   );
 };
 

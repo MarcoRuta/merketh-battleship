@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   gameContractFromAddress,
   getWeb3Instance,
@@ -17,7 +17,6 @@ export const action = async ({ request }) => {
   const address = form.get("address");
   const contract = gameContractFromAddress(address);
   const accounts = await getWeb3Instance().eth.getAccounts();
-  const opponent = form.get("opponent");
   const tree = StandardMerkleTree.load(await loadBoardTree(), [
     "bool",
     "uint256",
@@ -27,19 +26,12 @@ export const action = async ({ request }) => {
   try {
     switch (intent) {
       case "validate":
-        const shotsTaken = await contract.methods
-          .getShotsTaken(opponent)
-          .call();
-
+        // Retrieve the board size
         const size = Math.sqrt(await contract.methods.boardSize().call());
-        console.log(size);
 
-        const all = [
-          ...Array.from({ length: size * size }, (_, index) => index),
-        ];
-        const { proof, proofFlags, leaves } = tree.getMultiProof(
-          all.filter((i) => !shotsTaken.find((e) => parseInt(e.index) === i))
-        );
+        // Get value and proof for each leaf
+        const all = [...Array.from({ length: size * size }, (_, index) => index)];
+        const { proof, proofFlags, leaves } = tree.getMultiProof(all);
         const board = [];
         const salts = [];
         const indexes = [];
@@ -49,6 +41,7 @@ export const action = async ({ request }) => {
           indexes.push(e[2]);
         });
 
+        // Validate the board
         await contract.methods
           .checkWinnerBoard(proof, proofFlags, board, salts, indexes)
           .send({
@@ -71,17 +64,23 @@ export const End = () => {
   } = useEth();
   const {
     game,
-    data: { playerOne, playerTwo, winner, currentPhase },
+    data: { winner, currentPhase },
   } = useRouteLoaderData("game");
-  const setAlert = useAlert();
+  const {setAlert} = useAlert();
   const navigate = useNavigate();
 
-  const opponent = playerOne === accounts[0] ? playerTwo : playerOne;
 
   useEffect(() => {
     const handleWinnerVerified = () => {
       navigate(`/game/${game._address}/withdraw`);
     };
+
+    const handlePlayerMove = (e) => {
+      e.returnValues.player != accounts[0]
+      ? setAlert("The opponent is not AFK!","warning")
+      : setAlert("The opponent is accusing you of being AFK!","warning");
+      navigate(`/game/${game._address}/end`);
+    }
 
     // Setup listener for BetProposal event with opponent filter
     const listener1 = game.events
@@ -92,13 +91,18 @@ export const End = () => {
       e.returnValues.player !== accounts[0]
         ? setAlert("Opponent has been reported as AFK.", "success")
         : setAlert("You have been reported as AFK.", "warning");
-      navigate(`/game/${game._address}/attacking`);
+      navigate(`/game/${game._address}/end`);
     });
+
+    const listener3 = game.events.PlayerMove().on("data",handlePlayerMove);
+
+
 
     // Clean up the event listener when the component unmounts
     return () => {
       listener1.unsubscribe();
       listener2.unsubscribe();
+      listener3.unsubscribe();
     };
   }, [game]);
 
@@ -124,7 +128,6 @@ export const End = () => {
         ) : (
           <Form method="post">
             <input type="hidden" name="address" value={game._address} />
-            <input type="hidden" name="opponent" value={opponent} />
             <input type="hidden" name="intent" value="validate" />
             <CustomButton type="submit" className="btn btn-primary">
               Validate your board!

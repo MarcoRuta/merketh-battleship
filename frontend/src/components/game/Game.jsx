@@ -3,7 +3,7 @@ import {
   gameContractFromAddress,
   getWeb3Instance,
   phaseToString,
-  isGameStarted,
+  isAFKAllowed,
 } from "../../utils";
 import { useAlert } from "../../contexts/AlertContext";
 import { useEth } from "../../contexts/EthContext";
@@ -26,15 +26,16 @@ export const loader = async ({ params }) => {
     const playerTwo = await game.methods.adversary().call();
     const playerOneData = await game.methods.players(playerOne).call();
     const playerTwoData = await game.methods.players(playerTwo).call();
-    const playerOneShots = await game.methods.getShotsTaken(playerOne).call();
-    const playerTwoShots = await game.methods.getShotsTaken(playerTwo).call();
+
     const fleetSize = await game.methods.fleetSize().call();
     const boardSize = await game.methods.boardSize().call();
     const data = {
       playerOne,
       playerTwo,
-      playerOneShots,
-      playerTwoShots,
+      playerOneShots: playerOneData.shots,
+      playerTwoShots: playerTwoData.shots,
+      playerOneBet: playerOneData.bet,
+      playerTwoBet: playerTwoData.bet,
       hasPlayerOneFund: playerOneData.hasPaid,
       hasPlayerTwoFund: playerTwoData.hasPaid,
       isPlayerOneAKF: playerOneData.afk,
@@ -45,8 +46,6 @@ export const loader = async ({ params }) => {
       boardSize,
       currentPhase: await game.methods.gamePhase().call(),
       bet: await game.methods.bet().call(),
-      playerOneBet: await game.methods.betsQueue(playerOne).call(),
-      playerTwoBet: await game.methods.betsQueue(playerTwo).call(),
       playerTurn: await game.methods.turn().call(),
       winner: await game.methods.winner().call(),
     };
@@ -150,12 +149,12 @@ export const Game = () => {
             gap: 0,
           }}
         >
-          <StatusBox flexDirection="column" left="20px" width="200px">
+          <StatusBox flexDirection="column" left="20px" width="150px">
             <Box width="30px" />
             <Typography variant="body1" color="primary" fontWeight="bold">
               {phaseToString(currentPhase)}
             </Typography>
-            {isGameStarted(currentPhase) === true ? (
+            {isAFKAllowed(currentPhase) === true ? (
               playerTurn !== "0x0000000000000000000000000000000000000000" ? (
                 playerTurn === accounts[0] ? (
                   <>
@@ -176,7 +175,7 @@ export const Game = () => {
             ) : (
               <> </>
             )}{" "}
-            {isGameStarted(currentPhase) ? (
+            {isAFKAllowed(currentPhase)  ? (
               <>
                 {" "}
                 <Form method="post">
@@ -206,7 +205,7 @@ export const Game = () => {
             )}
           </StatusBox>
         </Container>
-        <GameBox width="80%" right="50px">
+        <GameBox alignItems="center" width="80%">
           <Outlet />
         </GameBox>
         <StatusBox bottom="20px">

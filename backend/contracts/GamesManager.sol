@@ -1,15 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 import "./Game.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract GamesManager {
+
+        using SafeMath for uint8;
+    using SafeMath for uint256;
+
     // Maps Games that are joinable.
     mapping(Game => bool) private joinableGamesMap;
 
-    // Addresses of the joinable games.
+    // List of the joinable games.
     Game[] private joinableGames;
 
-    // Mapping that keeps an index of the joinable games.
+    // Mapping that keeps the index of the joinable games.
     mapping(Game => uint256) private joinableGamesIndexes;
 
     // Nonce used for gameID pseudo-random number generation.
@@ -41,7 +46,7 @@ contract GamesManager {
         // Create a new game
         Game newGame = new Game(msg.sender, _small);
 
-        // Add the game.
+        // Add the game to the joinable list.
         _addGame(newGame);
 
         // Emit event to inform client about the new game address.
@@ -74,7 +79,9 @@ contract GamesManager {
             return;
         }
 
-        // Generate a random index to access the joinable game list.
+        // Generate a random index to access the joinable game list using the
+        // blockhash of the previous block, the msg.sender address and the local nonce
+        // that is incremented at each iteraction.
         uint256 random = uint256(
             keccak256(
                 abi.encodePacked(blockhash(block.number - 1), msg.sender, nonce)
@@ -104,6 +111,7 @@ contract GamesManager {
                 break;
             }
         }
+        // If no game is found emit NoGame
         if (!found) emit NoGame(msg.sender);
     }
 
@@ -111,20 +119,22 @@ contract GamesManager {
     ///HELPERS///
     /////////////
 
-    // removal of a game from the joinable game list.
+    // Removal of a game from the joinable game list.
     function _removeGame(Game _game) internal {
         assert(joinableGamesMap[_game] == true);
-        assert(joinableGames.length > 0);
         delete joinableGamesMap[_game];
 
+        // Get the game index.
         uint256 index = joinableGamesIndexes[_game];
 
         // Update the joinable games index list.
         if (joinableGames.length == 1 || index == joinableGames.length - 1) {
             joinableGames.pop();
         } else {
+            // Put the index in the head and pop 
             joinableGames[index] = joinableGames[joinableGames.length - 1];
             joinableGames.pop();
+            // Assign the index
             joinableGamesIndexes[joinableGames[index]] = index;
         }
 

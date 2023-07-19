@@ -84,6 +84,13 @@ export const Betting = () => {
       navigate(`/game/${game._address}/bet`);
     };
 
+    const handlePlayerMove = (e) => {
+      e.returnValues.player != accounts[0]
+      ? setAlert("The opponent is not AFK!","warning")
+      : setAlert("The opponent is accusing you of being AFK!","warning");
+      navigate(`/game/${game._address}/bet`);
+    }
+
     // Setup listener for BetProposal event with opponent filter
     const listener1 = game.events
       .BetProposal({ filter: { player: opponent } })
@@ -92,9 +99,23 @@ export const Betting = () => {
     // Setup listener for FundDeposited event
     const listener2 = game.events.FundsDeposited().on("data", handleFunding);
 
+    // Setup listener for PlayerAFK event
+    const listener3 = game.events.PlayerAFK().on("data", (e) => {
+      console.log("PlayerAFK event emitted");
+      e.returnValues.player !== accounts[0]
+        ? setAlert("Opponent has been reported as AFK.", "success")
+        : setAlert("You have been reported as AFK.", "warning");
+      navigate(`/game/${game._address}/bet`);
+    });
+
+    const listener4 = game.events.PlayerMove().on("data",handlePlayerMove);
+
     // Clean up the event listener when the component unmounts
     return () => {
       listener1.unsubscribe();
+      listener2.unsubscribe();
+      listener3.unsubscribe();      
+      listener4.unsubscribe();
     };
   }, [game, navigate, location, opponent, opponentBet, setAlert]);
 

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Button, Box, Typography, TextField } from "@mui/material";
-import shipImage from "../../assets/ship.png";
 import brokenShipImage from "../../assets/brokenShip.png";
 import missImage from "../../assets/miss.png";
-import seaImage from "../../assets/sea.png";
 import targetImage from "../../assets/target.png";
 
 export const AttackingBoard = ({
@@ -76,7 +73,6 @@ export const AttackingBoard = ({
           }}
         >
           <div style={{ width: "65px" }} />{" "}
-          {/* Empty space for y-axis labels */}
           {yAxisLabels.map((label) => (
             <div
               key={`x-${label}`}

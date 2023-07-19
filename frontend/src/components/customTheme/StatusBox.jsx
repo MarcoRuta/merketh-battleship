@@ -17,7 +17,7 @@ export const StatusBox = ({
         alignItems: "center",
         backgroundColor: "rgba(0, 0, 0, 0.05)",
         backdropFilter: "blur(10px)",
-        padding: "10px",
+        padding: "5px",
         borderRadius: "5px",
         position: "fixed",
         width: { width },

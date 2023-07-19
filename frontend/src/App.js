@@ -86,13 +86,11 @@ const App = () => {
 
   return (
     <ThemeProvider theme={customTheme}>
-      <AlertProvider>
         <CssBaseline />
         <Box sx={{ backgroundColor: customTheme.palette.background.default }}>
           <CustomNavbar />
           {contract ? <RouterProvider router={myRouter} /> : null}
         </Box>
-      </AlertProvider>
     </ThemeProvider>
   );
 };

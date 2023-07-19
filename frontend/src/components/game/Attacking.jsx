@@ -11,11 +11,12 @@ import { CustomButton, AttackingBoard, DefendingBoard } from "./../customTheme";
 import {
   getWeb3Instance,
   gameContractFromAddress,
+  indexToCoordinate,
   ShotType,
   loadBoardTree,
   loadBoard,
 } from "./../../utils";
-import { Typography, Container } from "@mui/material";
+import { Typography, Box, Container } from "@mui/material";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
 export const loader = async ({ params }) => {
@@ -27,7 +28,7 @@ export const loader = async ({ params }) => {
     const playerOneShots = await game.methods.getShotsTaken(playerOne).call();
     const playerTwoShots = await game.methods.getShotsTaken(playerTwo).call();
 
-    return { board, data: { playerOneShots, playerTwoShots } };
+    return { board, data: { playerOneShots, playerTwoShots} };
   } catch (err) {
     console.log(err);
   }
@@ -43,7 +44,7 @@ export const action = async ({ request }) => {
 
   try {
     switch (intent) {
-      case "checkAndAttack":
+      case "counterattack":
         console.log("check and attack");
         const tree = StandardMerkleTree.load(await loadBoardTree());
         const checkPos = parseInt(form.get("checkIndex"));
@@ -51,7 +52,7 @@ export const action = async ({ request }) => {
         const proof = tree.getProof(checkPos);
 
         await contract.methods
-          .checkAndAttack(value[0], value[1], value[2], proof, pos)
+          .counterattack(value[0], value[1], value[2], proof, pos)
           .send({ from: accounts[0] });
         break;
 
@@ -85,10 +86,12 @@ export const Attacking = () => {
   } = useLoaderData();
 
   const opponent = playerOne === accounts[0] ? playerTwo : playerOne;
+
   const playerShots =
     playerOne === accounts[0] ? playerOneShots : playerTwoShots;
+
   const opponentShots =
-    playerOne === accounts[0] ? playerTwoShots : playerOneShots;
+  playerOne === accounts[0] ? playerTwoShots : playerOneShots
 
   const navigate = useNavigate();
   const { setAlert } = useAlert();
@@ -139,6 +142,12 @@ export const Attacking = () => {
       navigate(`/game/${game._address}/attacking`);
     };
 
+    const handlePlayerMove = (e) => {
+      e.returnValues.player !== accounts[0]
+      ? setAlert("The opponent is not AFK!","warning")
+      : setAlert("The opponent is accusing you of being AFK!","warning");
+      navigate(`/game/${game._address}/attacking`);
+    }
     const listener1 = game.events
       .ShotTaken({ filter: { player: opponent } })
       .on("data", handleShotTaken);
@@ -151,10 +160,13 @@ export const Attacking = () => {
       navigate(`/game/${game._address}/attacking`);
     });
 
+    const listener3 = game.events.PlayerMove().on("data",handlePlayerMove);
+
     // Clean up the event listener when the component unmounts
     return () => {
       listener1.unsubscribe();
       listener2.unsubscribe();
+      listener3.unsubscribe();
     };
   }, [playerTurn, navigate]);
 
@@ -166,12 +178,12 @@ export const Attacking = () => {
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
-          gap: 30,
+          gap: 15,
         }}
       >
         <Container
           sx={{
-            width: "300px",
+            width: "500px",
             minHeight: "700px",
             paddingBottom: "64px",
             display: "flex",
@@ -203,7 +215,7 @@ export const Attacking = () => {
         />
         <Container
           sx={{
-            width: "200px",
+            width: "400px",
             display: "flex",
             minHeight: "700px",
             flexDirection: "column",
@@ -234,10 +246,7 @@ export const Attacking = () => {
             }}
           >
             <Typography variant="body1" color="primary" fontWeight="bold">
-              index
-            </Typography>
-            <Typography variant="body1" color="white">
-              {shotIndex}
+            {indexToCoordinate(size,shotIndex)}
             </Typography>
             {opponentShots.length === 0 ? (
               <Form method="post">
@@ -251,7 +260,7 @@ export const Attacking = () => {
             ) : (
               <Form method="post">
                 <input type="hidden" name="address" value={game._address} />
-                <input type="hidden" name="intent" value="checkAndAttack" />
+                <input type="hidden" name="intent" value="counterattack" />
                 <input type="hidden" name="attackIndex" value={shotIndex} />
                 <input type="hidden" name="checkIndex" value={shotToCheck} />
                 <CustomButton variant="contained" color="primary">

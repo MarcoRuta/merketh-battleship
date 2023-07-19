@@ -44,11 +44,11 @@ contract("Test Game contract", (accounts) => {
     // Player one propose his bet (100000).
     it("Propose a bet", async () => {
       const tx = await game.proposeBet(amount, { from: playerOne });
-      truffleAssert.eventEmitted(tx, "BetProposal", (ev) => {
+      truffleAssert.eventEmitted(tx, "BetProposal", async (ev) => {
         return ev.player == playerOne && ev.amount == amount;
+        const proposedAmount = await game.players[accounts[0]].bet;
+        assert.equal(proposedAmount, amount);
       });
-      const proposedAmount = await game.betsQueue(playerOne);
-      assert.equal(proposedAmount, amount);
     });
 
 
@@ -109,7 +109,7 @@ contract("Test Game contract", (accounts) => {
             proof = p1_tree.getProof(i);
 
             // Send proof and shoot in the same place as the other player
-            tx = await game.checkAndAttack(value[0], value[1], value[2], proof, i, {
+            tx = await game.counterattack(value[0], value[1], value[2], proof, i, {
             from: playerOne,
             });
             if (i == 4) break;
@@ -118,7 +118,7 @@ contract("Test Game contract", (accounts) => {
             value = p2_tree.values.find((v) => v.value[2] == i).value;
             proof = p2_tree.getProof(i);
             where = 1;
-            tx = await game.checkAndAttack(
+            tx = await game.counterattack(
             value[0],
             value[1],
             value[2],
@@ -135,14 +135,9 @@ contract("Test Game contract", (accounts) => {
     truffleAssert.eventEmitted(tx, "Winner", (e) => e.player === playerTwo);
     });
     it("Winner (playerTwo) sends its board for verification", async () => {
-        // Get array of shots already taken
-        const shotsTaken = await game.getShotsTaken(playerOne);
-  
-        // For each index in board, get value and proof if not already in shots verified
+        // For each index in board get value and proof
         const all = [...Array.from({ length: 4 * 4 }, (_, index) => index)];
-        const { proof, proofFlags, leaves } = p2_tree.getMultiProof(
-          all.filter((i) => !shotsTaken.find((e) => parseInt(e.index) === i))
-        );
+        const { proof, proofFlags, leaves } = p2_tree.getMultiProof(all);
         const board = [];
         const salts = [];
         const indexes = [];

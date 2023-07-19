@@ -40,15 +40,15 @@ contract("Test Game contract", (accounts) => {
   describe("Play a normal size game", () => {
     const amount = 100000;
     
-    // Player one propose his bet (100000).
     it("Propose a bet", async () => {
       const tx = await game.proposeBet(amount, { from: playerOne });
-      truffleAssert.eventEmitted(tx, "BetProposal", (ev) => {
+      truffleAssert.eventEmitted(tx, "BetProposal", async (ev) => {
         return ev.player == playerOne && ev.amount == amount;
+        const proposedAmount = await game.players[playerOne].bet;
+        assert.equal(proposedAmount, amount);
       });
-      const proposedAmount = await game.betsQueue(playerOne);
-      assert.equal(proposedAmount, amount);
     });
+    
 
     // Player one tries to agree to his own bet proposal
     it("Same player cannot also agree to it itself", async () => {
@@ -119,7 +119,7 @@ contract("Test Game contract", (accounts) => {
       truffleAssert.eventEmitted(tx, "FundsDeposited");
     });
 
-    // The two players commit their boards, we use the board index as low randomicity salts (only for testing)
+    // The two players commit their boards
     let p1_tree;
     let p2_tree;
     it("Players commit their board", async () => {
@@ -131,7 +131,7 @@ contract("Test Game contract", (accounts) => {
 
       await game.commitBoard(p1_tree.root, { from: playerOne });
 
-      // same board, but different (weak) salts
+
       p2_tree = StandardMerkleTree.of(board, ["bool", "uint256", "uint8"]);
       const tx = await game.commitBoard(p2_tree.root, { from: playerTwo });
       truffleAssert.eventEmitted(tx, "BoardsCommitted");
@@ -148,7 +148,7 @@ contract("Test Game contract", (accounts) => {
             proof = p1_tree.getProof(i);
 
             // Send proof and shoot in the same place as the other player
-            tx = await game.checkAndAttack(value[0], value[1], value[2], proof, i, {
+            tx = await game.counterattack(value[0], value[1], value[2], proof, i, {
             from: playerOne,
             });
             if (i == 9) break;
@@ -157,7 +157,7 @@ contract("Test Game contract", (accounts) => {
             value = p2_tree.values.find((v) => v.value[2] == i).value;
             proof = p2_tree.getProof(i);
             where = 1;
-            tx = await game.checkAndAttack(
+            tx = await game.counterattack(
             value[0],
             value[1],
             value[2],
@@ -174,14 +174,9 @@ contract("Test Game contract", (accounts) => {
     truffleAssert.eventEmitted(tx, "Winner", (e) => e.player === playerTwo);
     });
     it("Winner (playerTwo) sends its board for verification", async () => {
-        // Get array of shots already taken
-        const shotsTaken = await game.getShotsTaken(playerOne);
-  
-        // For each index in board, get value and proof if not already in shots verified
+        // For each index in board get value and proof 
         const all = [...Array.from({ length: 8 * 8 }, (_, index) => index)];
-        const { proof, proofFlags, leaves } = p2_tree.getMultiProof(
-          all.filter((i) => !shotsTaken.find((e) => parseInt(e.index) === i))
-        );
+        const { proof, proofFlags, leaves } = p2_tree.getMultiProof(all);
         const board = [];
         const salts = [];
         const indexes = [];

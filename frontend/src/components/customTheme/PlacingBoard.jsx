@@ -124,6 +124,7 @@ export const PlacingBoard = ({ size, fleetSize, onBoardStateChange }) => {
     <div>
       {renderBoard()}
       <p>
+        <Box mt={10}/>
         <Typography variant="h7" color="background.paper" fontWeight="bold">
           Remaining ships: 
         </Typography>

@@ -58,7 +58,6 @@ export const Placing = () => {
       fleetSize,
       boardSize,
       playerOne,
-      playerTwo,
       playerOneBoard,
       playerTwoBoard,
     },
@@ -75,6 +74,13 @@ export const Placing = () => {
       setAlert("Boards committed!", "success");
     };
 
+    const handlePlayerMove = (e) => {
+      e.returnValues.player != accounts[0]
+      ? setAlert("The opponent is not AFK!","warning")
+      : setAlert("The opponent is accusing you of being AFK!","warning");
+      navigate(`/game/${game._address}/placing`);
+    }
+
     // Setup listener for BetProposal event with opponent filter
     const listener1 = game.events
       .BoardsCommitted()
@@ -87,10 +93,14 @@ export const Placing = () => {
         : setAlert("You have been reported as AFK.", "warning");
         navigate(`/game/${game._address}/placing`);
     });
+
+    const listener3 = game.events.PlayerMove().on("data",handlePlayerMove);
+
     // Clean up the event listener when the component unmounts
     return () => {
       listener1.unsubscribe();
       listener2.unsubscribe();
+      listener3.unsubscribe();
     };
   }, [game, navigate]);
 
