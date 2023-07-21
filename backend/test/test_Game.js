@@ -7,7 +7,7 @@ const StandardMerkleTree = require("@openzeppelin/merkle-tree").StandardMerkleTr
 const setupGame = async (playerOne, playerTwo) => {
   const gamesManager = await GamesManager.deployed();
 
-  // Create  a normal size game.
+  // Create a normal size game.
   const createGame = await gamesManager.createGame(false, {
     from: playerOne,
   });
@@ -39,7 +39,8 @@ contract("Test Game contract", (accounts) => {
 
   describe("Play a normal size game", () => {
     const amount = 100000;
-    
+
+    // Player one propose his bet
     it("Propose a bet", async () => {
       const tx = await game.proposeBet(amount, { from: playerOne });
       truffleAssert.eventEmitted(tx, "BetProposal", async (ev) => {
@@ -147,7 +148,7 @@ contract("Test Game contract", (accounts) => {
             value = p1_tree.values.find((v) => v.value[2] == i).value;
             proof = p1_tree.getProof(i);
 
-            // Send proof and shoot in the same place as the other player
+            // Send proof and shoot 
             tx = await game.counterattack(value[0], value[1], value[2], proof, i, {
             from: playerOne,
             });

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract GamesManager {
 
-        using SafeMath for uint8;
+    using SafeMath for uint8;
     using SafeMath for uint256;
 
     // Maps Games that are joinable.

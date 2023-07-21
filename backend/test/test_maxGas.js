@@ -149,7 +149,6 @@ contract("Test Game contract - forfeit", (accounts) => {
       // same board, but different (weak) salts
       p2_tree = StandardMerkleTree.of(board, ["bool", "uint256", "uint8"]);
       const tx2 = await game.commitBoard(p2_tree.root, { from: playerTwo });
-      data.commitBoard2 = tx2.receipt.gasUsed;
       truffleAssert.eventEmitted(tx2, "BoardsCommitted");
     });
 
@@ -246,7 +245,6 @@ contract("Test Game contract - max amount of gas (8x8 - 54 miss)", (accounts) =>
       p1_tree = StandardMerkleTree.of(board, ["bool", "uint256", "uint8"]);
 
       const tx1 = await game.commitBoard(p1_tree.root, { from: playerOne });
-      data.commitBoard1 = tx1.receipt.gasUsed;
 
       // same board, but different (weak) salts
       p2_tree = StandardMerkleTree.of(board, ["bool", "uint256", "uint8"]);
